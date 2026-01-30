@@ -5016,10 +5016,11 @@ function solid(x, y, excludeEnt=null) {
         let mx = Math.floor(c.x);
         let my = Math.floor(c.y);
         if(mx >= 0 && mx < MAP_S && my >= 0 && my < MAP_S) {
-            // --- FIX: Check for BLOCK AND VOID ---
+            // --- FIX: Check for LETTER BLOCKS and WATER (Abyss) ---
             let ct = S.map[my*MAP_S + mx];
-            if(ct === T.BLOCK || ct === T.VOID) return true;
-            // -------------------------------------
+            // REMOVED T.VOID (because that is the Boss Room floor)
+            if(ct === T.BLOCK || ct === T.WATER) return true; 
+            // ------------------------------------------------------
         }
     }
 
@@ -5027,7 +5028,8 @@ function solid(x, y, excludeEnt=null) {
     let t = S.map[Math.floor(y)*MAP_S+Math.floor(x)];
 
     // --- FIX: Added VOID and BLOCK to forbidden tiles ---
-    if(t===T.WATER || t===T.BEDROCK || t===T.LOCK || t===T.VOID || t===T.BLOCK) return true;
+    // --- FIX: Added T.BLOCK, but REMOVED T.VOID ---
+    if(t===T.WATER || t===T.BEDROCK || t===T.LOCK || t===T.BLOCK) return true;
     
     for(let e of S.ents) {
         if(e.dead) continue;
