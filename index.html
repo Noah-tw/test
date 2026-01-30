@@ -5012,15 +5012,13 @@ function solid(x, y, excludeEnt=null) {
         if(['stone','stump','boulder'].includes(S.farm.debris[k])) return true;
     }
 
-   for(let c of corners) {
+  for(let c of corners) {
         let mx = Math.floor(c.x);
         let my = Math.floor(c.y);
         if(mx >= 0 && mx < MAP_S && my >= 0 && my < MAP_S) {
-            // --- FIX: Check for LETTER BLOCKS and WATER (Abyss) ---
+            // FIX: Block Letters and Ocean, but ALLOW Purple Floor (T.VOID)
             let ct = S.map[my*MAP_S + mx];
-            // REMOVED T.VOID (because that is the Boss Room floor)
-            if(ct === T.BLOCK || ct === T.WATER) return true; 
-            // ------------------------------------------------------
+            if(ct === T.BLOCK || ct === T.WATER) return true;
         }
     }
 
@@ -5029,6 +5027,7 @@ function solid(x, y, excludeEnt=null) {
 
     // --- FIX: Added VOID and BLOCK to forbidden tiles ---
     // --- FIX: Added T.BLOCK, but REMOVED T.VOID ---
+    // FIX: Add T.BLOCK (Letters) to walls. DO NOT add T.VOID here!
     if(t===T.WATER || t===T.BEDROCK || t===T.LOCK || t===T.BLOCK) return true;
     
     for(let e of S.ents) {
