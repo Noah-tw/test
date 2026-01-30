@@ -4244,17 +4244,29 @@ function update() {
                 if (e.moveDir === 0) offY = 0.3; 
                 if (e.moveDir === 2) offY = 0.9;
 
-                // --- THE FIX IS HERE ---
-                // OLD BROKEN LINE: let amIStuck = solid(e.x + 0.5, e.y + offY, e);
-                
-                // NEW CORRECT LINE: Check the CENTER (0.5). 
-                // This ensures we only ignore collision if the body is ACTUALLY inside a rock.
+                // 1. Check if we are inside a solid object
                 let amIStuck = solid(e.x + 0.5, e.y + 0.5, e);
 
-                // 2. Allow move if: (We are Stuck) OR (Target is Free)
-                if(amIStuck || !solid(e.x + mx + 0.5, e.y + offY, e)) e.x += mx;
-                if(amIStuck || !solid(e.x + 0.5, e.y + my + offY, e)) e.y += my;
-            }
+                // 2. SAFETY EXCEPTION: If we are stuck in WATER (0) or VOID (8), 
+                // we revoke "Stuck Privileges" so they don't wander deeper into the abyss.
+                let centerMapIdx = Math.floor(e.y + 0.5) * MAP_S + Math.floor(e.x + 0.5);
+                if (S.map[centerMapIdx] === 0 || S.map[centerMapIdx] === 8) {
+                    amIStuck = false;
+                }
+
+                // 3. X Movement (With bounce logic)
+                if(amIStuck || !solid(e.x + mx + 0.5, e.y + offY, e)) {
+                    e.x += mx;
+                } else {
+                    e.moveTimer = 0; // Hit a wall? Pick new direction immediately
+                }
+
+                // 4. Y Movement (With bounce logic)
+                if(amIStuck || !solid(e.x + 0.5, e.y + my + offY, e)) {
+                    e.y += my;
+                } else {
+                    e.moveTimer = 0; // Hit a wall? Pick new direction immediately
+                }
         }
 
         if(e.type==='mob') {
@@ -5012,23 +5024,18 @@ function solid(x, y, excludeEnt=null) {
         if(['stone','stump','boulder'].includes(S.farm.debris[k])) return true;
     }
 
-  for(let c of corners) {
+    for(let c of corners) {
         let mx = Math.floor(c.x);
         let my = Math.floor(c.y);
         if(mx >= 0 && mx < MAP_S && my >= 0 && my < MAP_S) {
-            // FIX: Block Letters and Ocean, but ALLOW Purple Floor (T.VOID)
-            let ct = S.map[my*MAP_S + mx];
-            if(ct === T.BLOCK || ct === T.WATER) return true;
+            if(S.map[my*MAP_S + mx] === T.BLOCK) return true;
         }
     }
 
     if(x<0||y<0||x>=MAP_S||y>=MAP_S) return true;
     let t = S.map[Math.floor(y)*MAP_S+Math.floor(x)];
 
-    // --- FIX: Added VOID and BLOCK to forbidden tiles ---
-    // --- FIX: Added T.BLOCK, but REMOVED T.VOID ---
-    // FIX: Add T.BLOCK (Letters) to walls. DO NOT add T.VOID here!
-    if(t===T.WATER || t===T.BEDROCK || t===T.LOCK || t===T.BLOCK) return true;
+    if(t===T.WATER || t===T.BEDROCK || t===T.LOCK) return true;
     
     for(let e of S.ents) {
         if(e.dead) continue;
