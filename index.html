@@ -4244,11 +4244,11 @@ function update() {
                 if (e.moveDir === 0) offY = 0.3; 
                 if (e.moveDir === 2) offY = 0.9;
 
-                // 1. Check if we are inside a solid object
+                // 1. Check if we are inside a solid object (Rock/Tree)
                 let amIStuck = solid(e.x + 0.5, e.y + 0.5, e);
 
                 // 2. SAFETY EXCEPTION: If we are stuck in WATER (0) or VOID (8), 
-                // we revoke "Stuck Privileges" so they don't wander deeper into the abyss.
+                // we revoke "Stuck Privileges". We treat Water as a hard wall.
                 let centerMapIdx = Math.floor(e.y + 0.5) * MAP_S + Math.floor(e.x + 0.5);
                 if (S.map[centerMapIdx] === 0 || S.map[centerMapIdx] === 8) {
                     amIStuck = false;
